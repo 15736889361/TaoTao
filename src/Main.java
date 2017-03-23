@@ -57,12 +57,19 @@ public class Main {
             ss[index] = sTemp;
         }
 
+        // 07:45 -- 08:25, 40 minutes (15 + 25)
+        // 40 * 60 = 2400 seconds / 15 = 160 seconds/personal / 2 = 80
+        // 调用接口有可能错误,重试(3次),所以每人时间减半
+        // 根据人数设置延时时间
+        int r_bound = (15 + 25) * 60 / ss.length / 2;
+        int r = ThreadLocalRandom.current().nextInt(1, r_bound);
+
         if (nowMillis > qd_beginMillis && nowMillis < qd_endMillis)
         {
-            System.out.println("日期:" + sdf.format(new Date()));
+            String info = String.format("日期:%s, 一共%d个人",sdf.format(new Date()),ss.length);
+            System.out.println(info);
             for (Schemer s: ss)
             {
-                int r = ThreadLocalRandom.current().nextInt(1, 100);
                 TimeUnit.SECONDS.sleep(r);
                 System.out.println(s.ClockIn() + ":" + s.getUsername() + " 时间:" + sdfNowTime.format(new Date()));
             }
@@ -70,10 +77,10 @@ public class Main {
         }
         else if (nowMillis > qt_beginMillis && nowMillis < qt_endMillis)
         {
-            System.out.println("日期:" + sdf.format(new Date()));
+            String info = String.format("日期:%s, 一共%d个人",sdf.format(new Date()),ss.length);
+            System.out.println(info);
             for (Schemer s: ss)
             {
-                int r = ThreadLocalRandom.current().nextInt(1, 100);
                 TimeUnit.SECONDS.sleep(r);
                 System.out.println(s.ClockOut() + ":" + s.getUsername() + " 时间:" + sdfNowTime.format(new Date()));
             }
@@ -90,7 +97,7 @@ public class Main {
      * @param filePath
      * @return 返回文件内容,按行存放在 list 中.
      */
-    public static List<String> readTxtFile(String filePath)
+    private static List<String> readTxtFile(String filePath)
     {
         List<String> list = new ArrayList<String>();
         try

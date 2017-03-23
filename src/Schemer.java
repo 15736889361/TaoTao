@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class Schemer {
     private String username;
@@ -43,7 +44,7 @@ public class Schemer {
 
     public void setImei(String imei) { this.imei = imei; }
 
-    public String Login() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public String Login() throws IOException, NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         String strLogin = "";
 
         // 2017-02-21
@@ -52,8 +53,11 @@ public class Schemer {
         do {
             // String strLogin = Http.send("https://121.42.207.18:6443/tt/app/appLogin",getLoginParameter(this.getUsername(), this.getPassword()));
             strLogin = Http.send("https://www.globetoc.com:6442/tt/app/appLogin", getLoginParameter(this.getUsername(), this.getPassword()));
-            count--;
-        } while (strLogin.equals("http_error") && count > 0);
+
+            if (strLogin.equals("http_error"))
+                TimeUnit.SECONDS.sleep(8);
+
+        } while (strLogin.equals("http_error") && count-- > 0);
 
         JSONObject obj = new JSONObject(strLogin);
         String currentOpenId = obj.getJSONObject("data").getString("currentOpenId");
@@ -67,14 +71,18 @@ public class Schemer {
         }
     }
 
-    public String ClockIn() throws ParseException, IOException, NoSuchAlgorithmException, KeyManagementException {
+    public String ClockIn() throws ParseException, IOException, NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         String currentOpenId = Login();
         String strQD = "";
         int count = 3;
         if (!currentOpenId.equals("登录失败")){
             do {
                 strQD = Http.send("https://www.globetoc.com:6442/tt/app/ms/signin/doSignInV2", getQDParameter(currentOpenId, this.getImei()));
-            } while (strQD.equals("http_error") && count > 0);
+
+                if (strQD.equals("http_error"))
+                    TimeUnit.SECONDS.sleep(8);
+
+            } while (strQD.equals("http_error") && count-- > 0);
 
             JSONObject jsonQD = new JSONObject(strQD);
             String isQDSuccess = jsonQD.getString("msg");
@@ -90,7 +98,7 @@ public class Schemer {
         }
     }
 
-    public String ClockOut() throws ParseException, IOException, NoSuchAlgorithmException, KeyManagementException {
+    public String ClockOut() throws ParseException, IOException, NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         String currentOpenId = Login();
         String strQT = "";
         int count = 3;
@@ -98,7 +106,11 @@ public class Schemer {
             do {
                 // String strQT =  Http.send("https://www.globetoc.com:6442/tt/app/ms/signin/doSignIn",getQTParameter(currentOpenId, this.getImei()));
                 strQT = Http.send("https://www.globetoc.com:6442/tt/app/ms/signin/doSignInV2", getQTParameter(currentOpenId, this.getImei()));
-            } while (strQT.equals("http_error") && count > 0);
+
+                if (strQT.equals("http_error"))
+                    TimeUnit.SECONDS.sleep(8);
+
+            } while (strQT.equals("http_error") && count-- > 0);
             JSONObject jsonQT = new JSONObject(strQT);
             String isQTSuccess = jsonQT.getString("msg");
 
